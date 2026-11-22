@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic Gift</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f0e14;
+      --surface: #181620;
+      --card: #1d1b27;
+      --card-2: #262333;
+      --purple: #7d57e8;
+      --purple-soft: #9675f2;
+      --gold: #f5b414;
+      --green: #18d46a;
+      --text: #ffffff;
+      --muted: #9e99b0;
+      --border: #2b273b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 84px;
+      overflow-x: hidden;
+    }
+
+    @keyframes rocketFloat {
+      0%, 100% { transform: translate(112px, 44px) rotate(36deg) translateY(0px); }
+      50% { transform: translate(112px, 44px) rotate(39deg) translateY(-4px); }
+    }
+    @keyframes flameFlicker {
+      0%, 100% { transform: scaleY(1); opacity: 0.95; }
+      50% { transform: scaleY(1.18); opacity: 1; }
+    }
+    @keyframes cardLeftSway {
+      0%, 100% { transform: rotate(-6deg) translateY(0px); }
+      50% { transform: rotate(-4deg) translateY(-2px); }
+    }
+    @keyframes cardRightSway {
+      0%, 100% { transform: rotate(6deg) translateY(0px); }
+      50% { transform: rotate(4deg) translateY(-2px); }
+    }
+    @keyframes tileBob {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2.5px); }
+    }
+    @keyframes artFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-3px) rotate(1.2deg); }
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.82); }
+    }
+    @keyframes spinEpic {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.08); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .anim-rocket { transform-box: fill-box; transform-origin: center; animation: rocketFloat 2.5s ease-in-out infinite; }
+    .anim-flame { transform-box: fill-box; transform-origin: top center; animation: flameFlicker 0.6s ease-in-out infinite; }
+    .anim-pvp-l { transform-box: fill-box; transform-origin: center; animation: cardLeftSway 2.3s ease-in-out infinite; }
+    .anim-pvp-r { transform-box: fill-box; transform-origin: center; animation: cardRightSway 2.3s ease-in-out infinite; }
+    .anim-t1 { transform-box: fill-box; transform-origin: center; animation: tileBob 2.1s ease-in-out infinite; }
+    .anim-t2 { transform-box: fill-box; transform-origin: center; animation: tileBob 2.1s ease-in-out 0.3s infinite; }
+    .anim-t3 { transform-box: fill-box; transform-origin: center; animation: tileBob 2.1s ease-in-out 0.6s infinite; }
+    .anim-art { transform-box: fill-box; transform-origin: center; animation: artFloat 2.8s ease-in-out infinite; }
+    .anim-spin { display: inline-block; animation: spinEpic 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    .tg-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #14121b;
+      border-bottom: 1px solid #232030;
+      font-size: 13px;
+    }
+    .tg-chrome-btn {
+      background: #232030;
+      border: 1px solid #322e45;
+      color: #fff;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.14s ease, background 0.14s ease;
+    }
+    .tg-chrome-btn:active { transform: scale(0.95); }
+    .tg-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .profile-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px 10px;
+      background: var(--bg);
+    }
+    .profile-left {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+    .avatar-ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(135deg, #8b63f5, #4d329c);
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .avatar-ring:active { transform: scale(0.95); }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #171520;
+      display: block;
+    }
+    .avatar-gem {
+      position: absolute;
+      bottom: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #181620;
+      border: 1px solid #38334d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+    .bal-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .bal-caption { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .bal-main {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+    }
+    .bal-sub {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      color: #fff;
+      background: var(--purple);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), filter 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1.5px); }
+    .btn:active:not(:disabled) { transform: translateY(1px) scale(0.96); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-deposit {
+      background: linear-gradient(180deg, #8b68f0, #734ce0);
+      padding: 11px 16px;
+      border-radius: 15px;
+      box-shadow: 0 4px 14px rgba(125, 87, 232, 0.32);
+    }
+    .btn-wallet {
+      background: #221f30;
+      border: 1px solid #35304a;
+      color: #dfd9f5;
+      padding: 10px 11px;
+      border-radius: 14px;
+      font-size: 11px;
+    }
+    .btn-wallet.connected {
+      background: #133827;
+      border-color: #1bd96a;
+      color: #6df2a7;
+    }
+    .btn-gold {
+      background: linear-gradient(180deg, #ffbe1a, #e09900);
+      color: #161208;
+      box-shadow: 0 4px 12px rgba(245, 180, 20, 0.25);
+    }
+    .btn-purple-pill {
+      background: linear-gradient(180deg, #8e6cf2, #734ce0);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: var(--card-2);
+      color: #fff;
+      border: 1px solid #38334e;
+    }
+
+    .live-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      min-height: 76px;
+    }
+    .live-row::-webkit-scrollbar { display: none; }
+    .live-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+      padding: 2px 4px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: 0.5px;
+    }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 1.3s ease-in-out infinite;
+    }
+    .live-slot {
+      min-width: 66px;
+      height: 62px;
+      border-radius: 15px;
+      background: linear-gradient(170deg, #252233, #181622);
+      border: 1px solid #2e2a40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .live-empty {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 6px;
+    }
+
+    .section { padding: 4px 14px 12px; }
+    .game-banner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      min-height: 116px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
+    }
+    .game-banner:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,0.45); }
+    .game-banner:active { transform: translateY(1px) scale(0.985); }
+
+    .banner-rocket {
+      background: radial-gradient(circle at 82% 45%, #8ecaff 0%, #4b9ef5 48%, #2874db 100%);
+    }
+    .banner-pvp {
+      background: radial-gradient(circle at 80% 45%, #ffd24c 0%, #f2a413 55%, #d67e06 100%);
+    }
+    .banner-play {
+      background: radial-gradient(circle at 82% 45%, #9d72ff 0%, #6d3ce8 55%, #4d22bd 100%);
+    }
+
+    .banner-info {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      max-width: 56%;
+    }
+    .pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
+      color: #16141f;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 999px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.16);
+    }
+    .banner-heading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      letter-spacing: 0.2px;
+    }
+    .banner-art {
+      position: relative;
+      z-index: 2;
+      width: 168px;
+      height: 96px;
+      flex-shrink: 0;
+    }
+    .banner-art svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .free-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+    .free-card {
+      position: relative;
+      border-radius: 22px;
+      padding: 13px 12px 12px;
+      background: linear-gradient(180deg, #1b1925 0%, #14121b 100%);
+      border: 1.5px solid #2e2942;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 226px;
+      overflow: hidden;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .free-card.gold-border { border-color: #6b531c; }
+    .free-card.purple-border { border-color: #4c3882; }
+    .free-card:hover { transform: translateY(-2px); }
+
+    .free-title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      font-style: italic;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    }
+    .free-visual {
+      height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0 6px;
+    }
+    .free-visual svg {
+      width: 106px;
+      height: 106px;
+      overflow: visible;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.55));
+    }
+    .free-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .free-sub {
+      font-size: 11px;
+      line-height: 1.15;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .free-btn {
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+    .panel-title { font-size: 16px; font-weight: 900; margin-bottom: 10px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .list-item {
+      background: var(--card-2);
+      border: 1px solid #342f4a;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #35304a;
+      background: #121018;
+      color: #fff;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .epic-box {
+      background: linear-gradient(160deg, #271e42, #171424);
+      border: 1px solid #593fb3;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #14121b;
+      border-top: 1px solid #242133;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 6px 8px;
+      z-index: 30;
+    }
+    .nav-item {
+      background: none;
+      border: none;
+      color: #8f8aa3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 4px;
+      border-radius: 14px;
+      transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease;
+    }
+    .nav-item svg { width: 20px; height: 20px; }
+    .nav-item:active { transform: scale(0.94); }
+    .nav-item.active {
+      background: #7c57e8;
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(125, 87, 232, 0.35);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid #3a3552;
+      border-radius: 20px;
+      padding: 16px;
+      max-height: 86vh;
+      overflow-y: auto;
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .row-gap { display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute;visibility:hidden;" aria-hidden="true">
+    <defs>
+      <linearGradient id="gRocketBody" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="65%" stop-color="#e8eeff" />
+        <stop offset="100%" stop-color="#a8bae8" />
+      </linearGradient>
+      <linearGradient id="gRocketRed" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff5e62" />
+        <stop offset="100%" stop-color="#c41928" />
+      </linearGradient>
+      <linearGradient id="gFlame" x1="0.5" y1="0" x2="0.5" y2="1">
+        <stop offset="0%" stop-color="#fff89e" />
+        <stop offset="50%" stop-color="#ff9900" />
+        <stop offset="100%" stop-color="#ff2442" />
+      </linearGradient>
+      <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fff2a1" />
+        <stop offset="40%" stop-color="#ffca28" />
+        <stop offset="80%" stop-color="#cf7b00" />
+        <stop offset="100%" stop-color="#7a4200" />
+      </linearGradient>
+      <linearGradient id="gPinkHelmet" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff99e6" />
+        <stop offset="55%" stop-color="#e633a4" />
+        <stop offset="100%" stop-color="#7a0e54" />
+      </linearGradient>
+      <linearGradient id="gVisor" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#29173b" />
+        <stop offset="55%" stop-color="#5e2a85" />
+        <stop offset="100%" stop-color="#120a1c" />
+      </linearGradient>
+      <radialGradient id="gGem" cx="35%" cy="30%" r="65%">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="40%" stop-color="#9be3ff" />
+        <stop offset="100%" stop-color="#0284c7" />
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <!-- Top Telegram Bar -->
+  <div class="tg-chrome">
+    <button class="tg-chrome-btn" onclick="closeApp()">إغلاق ✕</button>
+    <div class="tg-title-wrap">
+      <span>🎁</span>
+      <span>Epic Gift</span>
+    </div>
+    <div class="row-gap" style="gap:5px;">
+      <button class="tg-chrome-btn" onclick="openDepositModal()">⌄</button>
+      <button class="tg-chrome-btn" onclick="toggleConnectWallet()">⋮</button>
+    </div>
+  </div>
+
+  <!-- Balance & Wallet / Deposit Bar -->
+  <header class="profile-bar">
+    <div class="profile-left">
+      <div class="avatar-ring" onclick="toggleConnectWallet()" title="TON Connect">
+        <img id="userAvatar" class="avatar-img" alt="User" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23191724'/%3E%3Ccircle cx='32' cy='24' r='11' fill='%237d57e8'/%3E%3Cellipse cx='32' cy='50' rx='18' ry='12' fill='%237d57e8'/%3E%3C/svg%3E" />
+        <span class="avatar-gem">💎</span>
+      </div>
+      <div class="bal-meta">
+        <div class="bal-caption" id="userLabel">Your balance</div>
+        <div class="bal-main">
+          <span style="font-size:16px;color:#38bdf8;">✦</span>
+          <span id="balTon">0.000</span>
+        </div>
+        <div class="bal-sub">
+          <span>GRAM: <strong id="balGram">0</strong></span>
+          <span>EPIC Tier: <strong id="epicTierLabel">1</strong></span>
+          <span id="walletMiniStatus">غير متصل</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="connectWalletBtn" class="btn btn-wallet" onclick="toggleConnectWallet()">Connect Wallet</button>
+      <button class="btn btn-deposit" onclick="openDepositModal()">
+        <span>⊞</span>
+        <span>Deposit</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Live Verified Activity Strip -->
+  <div class="live-row" id="liveStrip">
+    <div class="live-badge"><span class="live-dot"></span>Live •</div>
+    <span class="live-empty" id="liveEmptyMsg">لا يوجد نشاط مؤكد بعد</span>
+  </div>
+
+  <!-- HOME TAB -->
+  <main id="tab-home" class="section">
+    <!-- ROCKET BANNER -->
+    <div class="game-banner banner-rocket" onclick="openGameModal('rocket')">
+      <div class="banner-info">
+        <span class="pill-tag">🔥 HOT</span>
+        <div class="banner-heading">
+          <span>🚀</span>
+          <span>ROCKET</span>
+        </div>
+      </div>
+      <div class="banner-art" aria-hidden="true">
+        <svg viewBox="0 0 175 100">
+          <rect x="4" y="46" width="44" height="18" rx="6" fill="#22c55e" stroke="#bbf7d0" stroke-width="0.9" transform="rotate(-14 26 55)" />
+          <text x="10" y="58" fill="#fff" font-size="10" font-weight="900" transform="rotate(-14 26 55)">x5.68</text>
+
+          <rect x="40" y="72" width="40" height="16" rx="5" fill="#16a34a" stroke="#bbf7d0" stroke-width="0.8" transform="rotate(8 60 80)" />
+          <text x="45" y="83" fill="#fff" font-size="9" font-weight="900" transform="rotate(8 60 80)">x2.21</text>
+
+          <rect x="122" y="18" width="46" height="18" rx="6" fill="#22c55e" stroke="#bbf7d0" stroke-width="0.9" transform="rotate(14 145 27)" />
+          <text x="128" y="30" fill="#fff" font-size="10" font-weight="900" transform="rotate(14 145 27)">x3.34</text>
+
+          <rect x="132" y="68" width="38" height="15" rx="5" fill="#16a34a" transform="rotate(12 151 75)" />
+          <text x="137" y="79" fill="#fff" font-size="8.5" font-weight="900" transform="rotate(12 151 75)">x2.03</text>
+
+          <g class="anim-rocket">
+            <path class="anim-flame" d="M-6 18 Q0 35 8 41 Q4 27 6 18 Z" fill="url(#gFlame)" />
+            <path d="M0 -24 C13 -12 15 8 10 18 L-10 18 C-15 8 -13 -12 0 -24 Z" fill="url(#gRocketBody)" stroke="#9fb3e6" stroke-width="1.2" />
+            <path d="M0 -24 C6 -17 8 -10 8 -5 L-8 -5 C-8 -10 -6 -17 0 -24 Z" fill="url(#gRocketRed)" />
+            <circle cx="0" cy="-2" r="5.5" fill="url(#gGem)" stroke="#1e3a8a" stroke-width="1.5" />
+            <path d="M-11 10 L-20 20 L-10 18 Z" fill="url(#gRocketRed)" />
+            <path d="M11 10 L20 20 L10 18 Z" fill="url(#gRocketRed)" />
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- PVP HUB BANNER -->
+    <div class="game-banner banner-pvp" onclick="openGameModal('pvp')">
+      <div class="banner-info">
+        <span class="pill-tag">⚡ NEW</span>
+        <div class="banner-heading">
+          <span>⚔️</span>
+          <span>PVP HUB</span>
+        </div>
+      </div>
+      <div class="banner-art" aria-hidden="true">
+        <svg viewBox="0 0 175 100">
+          <g class="anim-pvp-l">
+            <rect x="12" y="18" width="70" height="54" rx="11" fill="#fff3b0" stroke="#f59e0b" stroke-width="2" />
+            <circle cx="47" cy="43" r="15" fill="#fbbf24" stroke="#b45309" stroke-width="1.5" />
+            <path d="M37 23 L42 14 L47 21 L52 14 L57 23 Z" fill="url(#gGold)" stroke="#92400e" stroke-width="1" />
+            <rect x="30" y="50" width="34" height="12" rx="4" fill="#18181b" />
+            <text x="34" y="59" fill="#facc15" font-size="8.5" font-weight="900">13.3%</text>
+            <rect x="24" y="67" width="46" height="16" rx="7" fill="#f59e0b" />
+            <text x="34" y="78" fill="#18181b" font-size="9.5" font-weight="900">SOLO</text>
+          </g>
+          <g class="anim-pvp-r">
+            <rect x="88" y="18" width="72" height="54" rx="11" fill="#1e293b" stroke="#60a5fa" stroke-width="2" />
+            <text x="102" y="53" fill="#ffffff" font-size="22" font-weight="900" stroke="#2563eb" stroke-width="1.2">VS</text>
+            <rect x="100" y="67" width="48" height="16" rx="7" fill="#2563eb" />
+            <text x="110" y="78" fill="#ffffff" font-size="9.5" font-weight="900">TEAM</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- PLAY HUB BANNER -->
+    <div class="game-banner banner-play" onclick="openGameModal('play')">
+      <div class="banner-info">
+        <span class="pill-tag" style="visibility:hidden;">PLAY</span>
+        <div class="banner-heading">
+          <span>🎮</span>
+          <span>PLAY HUB</span>
+        </div>
+      </div>
+      <div class="banner-art" aria-hidden="true">
+        <svg viewBox="0 0 175 100">
+          <g class="anim-t1">
+            <rect x="14" y="16" width="44" height="66" rx="9" fill="#16a34a" stroke="#86efac" stroke-width="1.5" transform="rotate(-7 36 49)" />
+            <circle cx="35" cy="42" r="13" fill="#22c55e" stroke="#fef08a" stroke-width="2" />
+            <path d="M35 35 L41 40 L35 49 L29 40 Z" fill="#f43f5e" />
+            <text x="19" y="72" fill="#fff" font-size="8.5" font-weight="900" transform="rotate(-7 36 49)">Upgrade</text>
+          </g>
+          <g class="anim-t2">
+            <rect x="64" y="14" width="42" height="68" rx="9" fill="#7c3aed" stroke="#ddd6fe" stroke-width="1.5" />
+            <circle cx="76" cy="28" r="2.5" fill="#f5d0fe" />
+            <circle cx="85" cy="28" r="2.5" fill="#f5d0fe" />
+            <circle cx="94" cy="28" r="2.5" fill="#f5d0fe" />
+            <circle cx="80.5" cy="40" r="2.5" fill="#f5d0fe" />
+            <circle cx="89.5" cy="40" r="2.5" fill="#f5d0fe" />
+            <circle cx="85" cy="52" r="4" fill="#facc15" />
+            <text x="71" y="73" fill="#fff" font-size="8.5" font-weight="900">Plinko</text>
+          </g>
+          <g class="anim-t3">
+            <rect x="112" y="18" width="44" height="66" rx="9" fill="#2563eb" stroke="#bfdbfe" stroke-width="1.5" transform="rotate(7 134 51)" />
+            <rect x="119" y="26" width="9" height="9" rx="2" fill="#60a5fa" />
+            <rect x="131" y="26" width="9" height="9" rx="2" fill="#60a5fa" />
+            <rect x="143" y="26" width="9" height="9" rx="2" fill="#93c5fd" />
+            <rect x="119" y="38" width="9" height="9" rx="2" fill="#93c5fd" />
+            <rect x="131" y="38" width="9" height="9" rx="2" fill="#60a5fa" />
+            <rect x="143" y="38" width="9" height="9" rx="2" fill="#60a5fa" />
+            <text x="122" y="72" fill="#fff" font-size="8.5" font-weight="900" transform="rotate(7 134 51)">Mines</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- FREE24 & EPIC STARS GIFT CARDS -->
+    <div class="free-grid">
+      <div class="free-card gold-border">
+        <div class="free-title">FREE24</div>
+        <div class="free-visual" aria-hidden="true">
+          <svg class="anim-art" viewBox="0 0 110 110">
+            <circle cx="42" cy="66" r="23" fill="none" stroke="url(#gGold)" stroke-width="10" />
+            <circle cx="68" cy="58" r="23" fill="none" stroke="url(#gGold)" stroke-width="10" />
+            <polygon points="68,22 77,31 68,40 59,31" fill="url(#gGem)" stroke="#ffffff" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="free-footer">
+          <span class="free-sub" id="free24Sub">24h<br/>Reward</span>
+          <button class="btn btn-gold free-btn" onclick="claimFree24()">🗓 Claim</button>
+        </div>
+      </div>
+
+      <div class="free-card purple-border">
+        <div class="free-title">EPIC</div>
+        <div class="free-visual" aria-hidden="true">
+          <svg class="anim-art" viewBox="0 0 110 110">
+            <circle cx="25" cy="30" r="12" fill="#ec4899" opacity="0.92" />
+            <circle cx="25" cy="30" r="6" fill="#facc15" />
+            <path d="M24 58 C24 40 42 30 60 32 C78 34 86 48 84 64 L30 68 C26 66 24 62 24 58 Z" fill="url(#gPinkHelmet)" />
+            <path d="M38 31 L35 18 L47 29 Z" fill="#f472b6" />
+            <path d="M62 31 L70 18 L73 33 Z" fill="#f472b6" />
+            <path d="M38 45 L80 47 L78 58 L38 56 Z" fill="url(#gVisor)" />
+            <rect x="64" y="60" width="30" height="26" rx="5" fill="#ffffff" />
+            <rect x="64" y="60" width="30" height="7" rx="3" fill="#ef4444" />
+            <text x="68" y="80" fill="#18181b" font-size="8" font-weight="900">EPIC</text>
+          </svg>
+        </div>
+        <div class="free-footer">
+          <span class="free-sub">Stars<br/>Spin</span>
+          <button class="btn btn-purple-pill free-btn" onclick="openEpicStarsModal()">🎁 EPIC</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- BACKPACK TAB -->
+  <main id="tab-backpack" class="section" style="display:none;">
+    <div class="panel">
+      <div class="panel-title">Backpack (الهدايا المؤكدة)</div>
+      <div id="backpackContainer"></div>
+    </div>
+  </main>
+
+  <!-- INVITE TAB -->
+  <main id="tab-invite" class="section" style="display:none;">
+    <div class="panel">
+      <div class="panel-title">Invite (رابط الإحالة الحقيقي)</div>
+      <div class="muted" style="margin-bottom:8px;">رابط الدعوة الخاص بك:</div>
+      <input id="inviteUrlInput" type="text" readonly />
+      <div class="row-gap">
+        <button class="btn" style="flex:1;" onclick="copyInviteLink()">نسخ الرابط</button>
+        <button class="btn btn-gold" style="flex:1;" onclick="shareInviteLink()">مشاركة في تيليجرام</button>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="muted" style="margin-bottom:6px;">تفعيل كود أو معرّف مُدعِي (إذا دخلت عبر إحالة):</div>
+        <input id="claimRefInput" type="text" placeholder="أدخل معرّف المُدعِي أو ref_..." />
+        <button class="btn btn-ghost" style="width:100%;" onclick="claimReferralCode()">تأكيد الإحالة</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- LEADERBOARD TAB -->
+  <main id="tab-leaderboard" class="section" style="display:none;">
+    <div class="panel">
+      <div class="panel-title">Leaderboard</div>
+      <div id="leaderboardContainer"></div>
+    </div>
+  </main>
+
+  <!-- EARN TAB -->
+  <main id="tab-earn" class="section" style="display:none;">
+    <div class="panel">
+      <div class="panel-title">Earn & EPIC Stars Gifts</div>
+      <div class="epic-box">
+        <div style="font-weight:900;margin-bottom:4px;">⭐ نظام إرسال النجوم وسبين هدية EPIC التصاعدي</div>
+        <div class="muted" style="margin-bottom:8px;">
+          إجمالي النجوم المرسلة المؤكدة: <strong id="earnStarsSent">0</strong> ⭐ • المستوى التصاعدي الحالي: <strong id="earnEpicTier">Tier 1</strong>
+        </div>
+        <button class="btn btn-gold" style="width:100%;" onclick="openEpicStarsModal()">إرسال نجوم وبدء سبين هدية EPIC</button>
+      </div>
+      <div id="tasksContainer"></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item" data-tab="backpack" onclick="switchTab('backpack')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2h12v6a6 6 0 0 1-12 0V2z"/><path d="M4 8h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><path d="M12 12v6"/>
+      </svg>
+      <span>Backpack</span>
+    </button>
+    <button class="nav-item" data-tab="invite" onclick="switchTab('invite')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Invite</span>
+    </button>
+    <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+      </svg>
+      <span>Leaderboard</span>
+    </button>
+    <button class="nav-item" data-tab="earn" onclick="switchTab('earn')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5a3 3 0 0 0-6 0c0 2.5 6 2 6 4.5a3 3 0 0 1-6 0"/>
+      </svg>
+      <span>Earn</span>
+    </button>
+  </nav>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://isujdshthulemghpvodm.supabase.co";
+    const SUPABASE_ANON_KEY = "Sb_publishable_LpDn2Usm2HXFRgLfRbFHYA_qQBbwbfn";
+    const ADMIN_ID = "5220076610";
+    const BOT_USERNAME = "Ccudr_BoT";
+    const MY_TON_WALLET = "UQCyYjztRjuwNpCvg5m_v0KlrAplIgtspBVJ4OjEszz-xFXj";
+    const GRAM_WALLET_ADDRESS = "UQCyYjztRjuwNpCvg5m_v0KlrAplIgtspBVJ4OjEszz-xFXj";
+    const TONCENTER_API = "https://toncenter.com/api/v2";
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    // Strictly real Telegram WebApp user when launched inside Telegram
+    const realTgUser = tg?.initDataUnsafe?.user || null;
+    const isAuthenticated = Boolean(realTgUser && realTgUser.id);
+    const userId = isAuthenticated ? String(realTgUser.id) : "";
+    const username = isAuthenticated ? (realTgUser.username || "") : "";
+
+    const EPIC_LADDER = [
+      { tier: 1, minStars: 15,  giftId: "5170233102089322756", title: "Plush Toy",        emoji: "🧸", stars: 15 },
+      { tier: 2, minStars: 50,  giftId: "5170250947678437525", title: "Birthday Cake",    emoji: "🎂", stars: 50 },
+      { tier: 3, minStars: 100, giftId: "5170521118301225164", title: "Trophy",           emoji: "🏆", stars: 100 },
+      { tier: 4, minStars: 200, giftId: "5170493347506064015", title: "Royal Crown",      emoji: "👑", stars: 200 },
+      { tier: 5, minStars: 500, giftId: "5170612141741595002", title: "Dragon",           emoji: "🐉", stars: 500 }
+    ];
+
+    function getStorageKey(base) {
+      return isAuthenticated ? `epic_${base}_${userId}` : `epic_${base}_guest`;
+    }
+
+    let userState = {
+      tg_id: userId,
+      username,
+      wallet_address: "",
+      balance_ton: 0,
+      balance_gram: 0,
+      stars_sent_total: Number(localStorage.getItem(getStorageKey("stars_sent_total")) || 0),
+      epic_tier: Number(localStorage.getItem(getStorageKey("epic_tier")) || 1),
+      deposit_tag: isAuthenticated ? `U${userId}` : "",
+      last_daily: null,
+      backpack: [],
+      processed_txs: []
+    };
+
+    let appData = {
+      tasks: [],
+      pvp_rooms: [],
+      leaderboard: [],
+      live_wins: []
+    };
+
+    let connectedWalletAddress = "";
+    let tonConnectUI = null;
+
+    function showStatusMessage(msg, targetId = null) {
+      const target = targetId ? document.getElementById(targetId) : null;
+      const fallback = target || document.getElementById("epicSpinResult") || document.getElementById("walletMiniStatus");
+      if (fallback) {
+        fallback.textContent = msg;
+      }
+    }
+
+    function openTelegramBotDirect() {
+      const url = `https://t.me/${BOT_USERNAME}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(url);
+      } else {
+        window.open(url, "_blank");
+      }
+    }
+
+    function initHeaderUser() {
+      if (isAuthenticated) {
+        document.getElementById("userLabel").textContent = `${realTgUser.first_name || username || userId} • Your balance`;
+        if (realTgUser.photo_url) {
+          document.getElementById("userAvatar").src = realTgUser.photo_url;
+        }
+        document.getElementById("inviteUrlInput").value = `https://t.me/${BOT_USERNAME}?start=ref_${userId}`;
+      } else {
+        document.getElementById("userLabel").textContent = "Epic Gift • Your balance";
+        document.getElementById("inviteUrlInput").value = `https://t.me/${BOT_USERNAME}`;
+      }
+    }
+
+    function persistProgressLocally() {
+      localStorage.setItem(getStorageKey("stars_sent_total"), String(userState.stars_sent_total || 0));
+      localStorage.setItem(getStorageKey("epic_tier"), String(userState.epic_tier || 1));
+    }
+
+    function computeEpicTierFromStars(totalStars) {
+      let tier = 1;
+      for (const step of EPIC_LADDER) {
+        if (totalStars >= step.minStars) tier = step.tier;
+      }
+      return tier;
+    }
+
+    function getEpicGiftForTier(tier) {
+      return EPIC_LADDER.find((x) => x.tier === tier) || EPIC_LADDER[0];
+    }
+
+    function closeApp() {
+      if (tg?.close) tg.close();
+    }
+
+    function updateWalletUI(address) {
+      connectedWalletAddress = address || "";
+      const btn = document.getElementById("connectWalletBtn");
+      const mini = document.getElementById("walletMiniStatus");
+      if (connectedWalletAddress) {
+        btn.textContent = "✓ Wallet";
+        btn.classList.add("connected");
+        mini.textContent = connectedWalletAddress.slice(0, 6) + "..." + connectedWalletAddress.slice(-4);
+      } else {
+        btn.textContent = "Connect Wallet";
+        btn.classList.remove("connected");
+        mini.textContent = "غير متصل";
+      }
+    }
+
+    function initTonConnect() {
+      try {
+        if (!window.TON_CONNECT_UI || !window.TON_CONNECT_UI.TonConnectUI) return;
+        const manifestUrl = new URL("tonconnect-manifest.json", window.location.href).toString();
+        tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+          manifestUrl,
+          actionsConfiguration: {
+            twaReturnUrl: `https://t.me/${BOT_USERNAME}`
+          }
+        });
+
+        if (tonConnectUI.wallet?.account?.address) {
+          updateWalletUI(tonConnectUI.wallet.account.address);
+        }
+
+        tonConnectUI.onStatusChange(async (wallet) => {
+          const addr = wallet?.account?.address || "";
+          updateWalletUI(addr);
+          if (addr && isAuthenticated && userState.wallet_address !== addr) {
+            userState.wallet_address = addr;
+            await saveUserState().catch(() => {});
+          }
+        });
+      } catch (e) {
+        console.error("TON Connect error:", e);
+      }
+    }
+
+    async function toggleConnectWallet() {
+      if (!tonConnectUI) initTonConnect();
+      if (!tonConnectUI) {
+        alert("تعذر تحميل TON Connect UI");
+        return;
+      }
+      if (tonConnectUI.wallet) {
+        await tonConnectUI.disconnect();
+        userState.wallet_address = "";
+        updateWalletUI("");
+        if (isAuthenticated) await saveUserState().catch(() => {});
+        return;
+      }
+      await tonConnectUI.openModal();
+    }
+
+    function hasSupabaseKey() {
+      return Boolean(SUPABASE_ANON_KEY) && !SUPABASE_ANON_KEY.includes("ضع_");
+    }
+
+    async function sbReq(path, options = {}) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        ...options,
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation",
+          ...(options.headers || {})
+        }
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      const txt = await res.text();
+      return txt ? JSON.parse(txt) : null;
+    }
+
+    async function apiHeaders() {
+      return {
+        "Content-Type": "application/json",
+        ...(isAuthenticated ? { "x-user-id": userId } : {}),
+        ...(tg?.initData ? { "x-telegram-init-data": tg.initData } : {})
+      };
+    }
+
+    async function loadAllData() {
+      if (hasSupabaseKey()) {
+        try {
+          if (isAuthenticated) {
+            const users = await sbReq(`users?tg_id=eq.${encodeURIComponent(userId)}&select=*`);
+            if (Array.isArray(users) && users.length > 0) {
+              Object.assign(userState, users[0]);
+              if (!Array.isArray(userState.backpack)) userState.backpack = [];
+              if (!Array.isArray(userState.processed_txs)) userState.processed_txs = [];
+              userState.stars_sent_total = Math.max(
+                Number(userState.stars_sent_total || 0),
+                Number(localStorage.getItem(getStorageKey("stars_sent_total")) || 0)
+              );
+              userState.epic_tier = Math.max(
+                Number(userState.epic_tier || 1),
+                computeEpicTierFromStars(userState.stars_sent_total)
+              );
+              if (userState.wallet_address) updateWalletUI(userState.wallet_address);
+            } else {
+              const created = await sbReq("users", {
+                method: "POST",
+                body: JSON.stringify([{
+                  tg_id: userId,
+                  username,
+                  wallet_address: "",
+                  balance_ton: 0,
+                  balance_gram: 0,
+                  deposit_tag: `U${userId}`,
+                  backpack: [],
+                  processed_txs: []
+                }])
+              });
+              if (Array.isArray(created) && created[0]) {
+                Object.assign(userState, created[0]);
+              }
+            }
+          }
+
+          const tasks = await sbReq("tasks?select=*&order=id.desc");
+          if (Array.isArray(tasks)) appData.tasks = tasks;
+
+          const top = await sbReq("users?select=tg_id,username,balance_ton,balance_gram&order=balance_ton.desc&limit=10");
+          if (Array.isArray(top)) appData.leaderboard = top;
+
+          const wins = await sbReq("live_wins?select=*&order=id.desc&limit=12");
+          if (Array.isArray(wins)) appData.live_wins = wins;
+        } catch (err) {
+          console.error("Data load error:", err);
+        }
+      }
+      persistProgressLocally();
+      renderUI();
+    }
+
+    async function saveUserState() {
+      persistProgressLocally();
+      if (!isAuthenticated || !hasSupabaseKey()) return;
+      await sbReq(`users?tg_id=eq.${encodeURIComponent(userId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          username: userState.username,
+          wallet_address: userState.wallet_address || connectedWalletAddress || "",
+          balance_ton: Number(Math.max(0, userState.balance_ton || 0).toFixed(4)),
+          balance_gram: Number(Math.max(0, userState.balance_gram || 0).toFixed(4)),
+          last_daily: userState.last_daily,
+          backpack: userState.backpack,
+          processed_txs: userState.processed_txs
+        })
+      });
+    }
+
+    async function pushLiveWin(label) {
+      appData.live_wins.unshift({ label });
+      appData.live_wins = appData.live_wins.slice(0, 12);
+      renderLiveStrip();
+      if (isAuthenticated && hasSupabaseKey()) {
+        await sbReq("live_wins", {
+          method: "POST",
+          body: JSON.stringify([{ tg_id: userId, label }])
+        }).catch(() => {});
+      }
+    }
+
+    function renderUI() {
+      document.getElementById("balTon").textContent = Number(userState.balance_ton || 0).toFixed(3);
+      document.getElementById("balGram").textContent = Number(userState.balance_gram || 0);
+      document.getElementById("epicTierLabel").textContent = `Tier ${userState.epic_tier || 1}`;
+      document.getElementById("earnStarsSent").textContent = Number(userState.stars_sent_total || 0);
+      document.getElementById("earnEpicTier").textContent = `Tier ${userState.epic_tier || 1}`;
+      renderLiveStrip();
+      renderBackpack();
+      renderLeaderboard();
+      renderTasks();
+    }
+
+    function renderLiveStrip() {
+      const strip = document.getElementById("liveStrip");
+      strip.innerHTML = `<div class="live-badge"><span class="live-dot"></span>Live •</div>`;
+      if (!appData.live_wins.length) {
+        const empty = document.createElement("span");
+        empty.className = "live-empty";
+        empty.textContent = "لا يوجد نشاط مؤكد بعد";
+        strip.appendChild(empty);
+        return;
+      }
+      appData.live_wins.forEach((w) => {
+        const slot = document.createElement("div");
+        slot.className = "live-slot";
+        slot.textContent = w.label;
+        strip.appendChild(slot);
+      });
+    }
+
+    function renderBackpack() {
+      const el = document.getElementById("backpackContainer");
+      if (!userState.backpack.length) {
+        el.innerHTML = `<div class="muted">لا توجد هدايا مؤكدة في الحقيبة بعد</div>`;
+        return;
+      }
+      el.innerHTML = userState.backpack
+        .map((item, i) => `<div class="list-item"><span>${item}</span><span class="muted">#${i + 1}</span></div>`)
+        .join("");
+    }
+
+    function renderLeaderboard() {
+      const el = document.getElementById("leaderboardContainer");
+      if (!appData.leaderboard.length) {
+        el.innerHTML = `<div class="muted">لا توجد بيانات متصدرين بعد</div>`;
+        return;
+      }
+      el.innerHTML = appData.leaderboard
+        .map((u, i) => `
+          <div class="list-item">
+            <span>#${i + 1} ${u.username || u.tg_id}</span>
+            <strong>${Number(u.balance_ton || 0).toFixed(3)} TON</strong>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderTasks() {
+      const el = document.getElementById("tasksContainer");
+      if (!appData.tasks.length) {
+        el.innerHTML = `<div class="muted">لا توجد مهام متاحة حالياً</div>`;
+        return;
+      }
+      el.innerHTML = appData.tasks
+        .map((t) => `
+          <div class="list-item">
+            <div>
+              <div><strong>${t.title}</strong></div>
+              <div class="muted">+${t.reward_amount} ${t.reward_currency}</div>
+            </div>
+            <button class="btn" onclick="claimTask(${t.id}, ${t.reward_amount}, '${t.reward_currency}')">Claim</button>
+          </div>
+        `)
+        .join("");
+    }
+
+    async function claimTask(id, reward, currency) {
+      if (!isAuthenticated) {
+        showStatusMessage("تم فتح التطبيق في المتصفح؛ لربط الحساب الحقيقي افتحه من داخل البوت.", "walletMiniStatus");
+        return;
+      }
+      const amt = Number(reward) || 0;
+      if (amt <= 0) return;
+      if (currency === "GRAM") userState.balance_gram += amt;
+      else userState.balance_ton += amt;
+      await saveUserState();
+      renderUI();
+      alert(`+${amt} ${currency}`);
+    }
+
+    async function claimFree24() {
+      if (!isAuthenticated) {
+        showStatusMessage("افتح البوت @Ccudr_BoT لمزامنة مكافأة 24h بحسابك.", "walletMiniStatus");
+        return;
+      }
+      const now = Date.now();
+      if (userState.last_daily && now - new Date(userState.last_daily).getTime() < 86400000) {
+        alert("المكافأة متاحة مرة واحدة كل 24 ساعة");
+        return;
+      }
+      userState.last_daily = new Date(now).toISOString();
+      userState.balance_ton += 0.05;
+      await saveUserState();
+      await pushLiveWin("+0.05 TON");
+      renderUI();
+      alert("تم استلام مكافأة FREE24 (+0.05 TON)");
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll("main").forEach((m) => (m.style.display = "none"));
+      document.getElementById(`tab-${tab}`).style.display = "block";
+      document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+    }
+
+    function closeModal() {
+      document.getElementById("modalBackdrop").classList.remove("open");
+    }
+
+    document.getElementById("modalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "modalBackdrop") closeModal();
+    });
+
+    function openDepositModal() {
+      const box = document.getElementById("modalBox");
+      box.innerHTML = `
+        <div class="modal-head">
+          <strong>Deposit TON</strong>
+          <button class="btn btn-ghost" onclick="closeModal()">✕</button>
+        </div>
+        <div class="muted">المحفظة المتصلة: ${connectedWalletAddress ? connectedWalletAddress : "غير متصلة"}</div>
+        <div class="muted" style="margin-top:8px;">عنوان محفظة TON المستقبِلة:</div>
+        <input type="text" readonly value="${MY_TON_WALLET}" />
+        <div class="muted">عنوان عملة GRAM المستقبِلة:</div>
+        <input type="text" readonly value="${GRAM_WALLET_ADDRESS}" />
+        <div class="muted">Memo / Tag الخاص بك:</div>
+        <input type="text" readonly value="${userState.deposit_tag || "غير متاح"}" />
+        <button class="btn" style="width:100%;margin-bottom:8px;" onclick="closeModal();toggleConnectWallet();">${connectedWalletAddress ? "فصل / تغيير المحفظة" : "ربط المحفظة عبر TON Connect"}</button>
+        <button class="btn btn-gold" style="width:100%;" onclick="verifyTonDeposit()">التحقق من وصول الإيداع على البلوكتشين</button>
+      `;
+      document.getElementById("modalBackdrop").classList.add("open");
+    }
+
+    async function verifyTonDeposit() {
+      if (!isAuthenticated || !userState.deposit_tag) {
+        showStatusMessage("تعذر قراءة Memo المستخدم خارج تيليجرام؛ افتح التطبيق من داخل البوت.", "walletMiniStatus");
+        return;
+      }
+      try {
+        const res = await fetch(`${TONCENTER_API}/getTransactions?address=${encodeURIComponent(MY_TON_WALLET)}&limit=25`);
+        const json = await res.json();
+        let added = 0;
+
+        if (json.ok && Array.isArray(json.result)) {
+          for (const tx of json.result) {
+            const hash = tx.transaction_id?.hash;
+            const comment = (tx.in_msg?.message || "").trim();
+            const nano = Number(tx.in_msg?.value || 0);
+            if (!hash || userState.processed_txs.includes(hash)) continue;
+            if (comment === userState.deposit_tag && nano > 0) {
+              const tonAmt = nano / 1e9;
+              userState.balance_ton += tonAmt;
+              userState.processed_txs.push(hash);
+              added += tonAmt;
+            }
+          }
+        }
+
+        if (added > 0) {
+          await saveUserState();
+          await pushLiveWin(`+${added.toFixed(3)} TON`);
+          renderUI();
+          alert(`تم تأكيد إضافة ${added.toFixed(4)} TON`);
+        } else {
+          alert("لم يتم رصد تحويل جديد مطابق للـ Tag بعد");
+        }
+      } catch (e) {
+        alert("تعذر التحقق من شبكة TON حالياً");
+      }
+    }
+
+    function openGameModal(type) {
+      if (type === "rocket" || type === "play" || type === "pvp") {
+        openEpicStarsModal();
+        return;
+      }
+      const box = document.getElementById("modalBox");
+      box.innerHTML = `
+        <div class="modal-head">
+          <strong>Epic Gift</strong>
+          <button class="btn btn-ghost" onclick="closeModal()">✕</button>
+        </div>
+        <div class="muted">إرسال نجوم حقيقي عبر تيليجرام وسبين تصاعدي لهدية EPIC واحدة.</div>
+        <button class="btn btn-gold" style="width:100%;margin-top:10px;" onclick="openEpicStarsModal()">فتح نافذة النجوم والسبين</button>
+      `;
+      document.getElementById("modalBackdrop").classList.add("open");
+    }
+
+    // Real Telegram Stars invoice + progressive single EPIC gift spin
+    function openEpicStarsModal() {
+      const currentTier = userState.epic_tier || 1;
+      const currentEpicGift = getEpicGiftForTier(currentTier);
+      const box = document.getElementById("modalBox");
+
+      box.innerHTML = `
+        <div class="modal-head">
+          <strong>⭐ إرسال نجوم وسبين هدية EPIC</strong>
+          <button class="btn btn-ghost" onclick="closeModal()">✕</button>
+        </div>
+        <div class="epic-box">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div>
+              <div class="muted">الهدية التصاعدية الحالية (المستوى ${currentEpicGift.tier})</div>
+              <div style="font-size:17px;font-weight:900;margin-top:2px;">${currentEpicGift.emoji} ${currentEpicGift.title}</div>
+            </div>
+            <span id="epicSpinWheel" style="font-size:32px;">🎡</span>
+          </div>
+          <div class="muted" style="margin-top:6px;">
+            النجوم المرسلة المؤكدة: <strong>${userState.stars_sent_total || 0}</strong> ⭐ — كلما زادت النجوم المرسلة يتصاعد مستوى هدية EPIC تلقائياً (هدية واحدة فقط لكل عملية دفع مؤكدة).
+          </div>
+        </div>
+
+        <div class="muted" style="margin-bottom:4px;">اختر باقة النجوم للإرسال عبر فاتورة تيليجرام (XTR):</div>
+        <select id="starsPackageSelect">
+          <option value="15">15 ⭐ (Tier 1 - Plush Toy)</option>
+          <option value="50">50 ⭐ (Tier 2 - Birthday Cake)</option>
+          <option value="100">100 ⭐ (Tier 3 - Trophy)</option>
+          <option value="200">200 ⭐ (Tier 4 - Royal Crown)</option>
+          <option value="500">500 ⭐ (Tier 5 - Dragon)</option>
+        </select>
+
+        <input id="epicRecipientInput" type="text" placeholder="معرّف المستلم في تيليجرام (الافتراضي حسابك)" value="${userId}" />
+        <button id="payStarsBtn" class="btn btn-gold" style="width:100%;" onclick="sendStarsAndSpinEpic()">إرسال النجوم وبدء السبين الحقيقي</button>
+        <div id="epicSpinResult" class="muted" style="margin-top:10px;"></div>
+      `;
+      document.getElementById("modalBackdrop").classList.add("open");
+    }
+
+    async function sendStarsAndSpinEpic() {
+      if (!isAuthenticated) {
+        const resultEl = document.getElementById("epicSpinResult");
+        if (resultEl) {
+          resultEl.innerHTML = 'لإتمام دفع النجوم عبر تيليجرام، <a href="https://t.me/Ccudr_BoT" target="_blank" style="color:#9675f2;font-weight:800;">افتح البوت @Ccudr_BoT</a> داخل تيليجرام.';
+        }
+        return;
+      }
+      if (!tg?.openInvoice) {
+        alert("واجهة الدفع openInvoice متاحة فقط داخل تطبيق تيليجرام الرسمي");
+        return;
+      }
+
+      const starsAmount = Number(document.getElementById("starsPackageSelect")?.value || 15);
+      const recipientId = (document.getElementById("epicRecipientInput")?.value || userId).trim() || userId;
+      const btn = document.getElementById("payStarsBtn");
+      const resultEl = document.getElementById("epicSpinResult");
+
+      btn.disabled = true;
+      resultEl.textContent = "جاري إنشاء فاتورة نجوم تيليجرام الحقيقية...";
+
+      try {
+        const invRes = await fetch("/api/stars-invoice", {
+          method: "POST",
+          headers: await apiHeaders(),
+          body: JSON.stringify({
+            giftId: `epic_spin_${starsAmount}`,
+            title: `EPIC Spin (${starsAmount} ⭐)`,
+            starCount: starsAmount,
+            targetUserId: recipientId,
+            epicSpin: true
+          })
+        });
+        const invData = await invRes.json();
+        if (!invRes.ok || !invData?.ok || !invData.invoiceLink) {
+          throw new Error(invData?.error || "تعذر إنشاء الفاتورة من الخادم");
+        }
+
+        resultEl.textContent = "بانتظار إتمام الدفع عبر نافذة نجوم تيليجرام...";
+
+        tg.openInvoice(invData.invoiceLink, async (status) => {
+          if (status !== "paid") {
+            btn.disabled = false;
+            resultEl.textContent = "لم يكتمل الدفع، لذلك لم يتم احتساب نجوم أو منح هدية.";
+            return;
+          }
+
+          const wheel = document.getElementById("epicSpinWheel");
+          if (wheel) {
+            wheel.classList.remove("anim-spin");
+            void wheel.offsetWidth;
+            wheel.classList.add("anim-spin");
+          }
+
+          const nextTotalStars = Number(userState.stars_sent_total || 0) + starsAmount;
+          const nextTier = Math.max(Number(userState.epic_tier || 1), computeEpicTierFromStars(nextTotalStars));
+          const wonGift = getEpicGiftForTier(nextTier);
+
+          // Deliver single EPIC gift via server API
+          let serverConfirmed = false;
+          try {
+            const giftRes = await fetch("/api/send-star-gift", {
+              method: "POST",
+              headers: await apiHeaders(),
+              body: JSON.stringify({
+                giftId: wonGift.giftId,
+                targetUserId: recipientId,
+                starCount: starsAmount,
+                title: `EPIC ${wonGift.title}`,
+                epicTier: nextTier,
+                starsSentTotal: nextTotalStars
+              })
+            });
+            const giftData = await giftRes.json();
+            if (giftRes.ok && giftData?.ok) {
+              serverConfirmed = true;
+            }
+          } catch (err) {
+            console.error("Gift delivery API error:", err);
+          }
+
+          userState.stars_sent_total = nextTotalStars;
+          userState.epic_tier = nextTier;
+          persistProgressLocally();
+
+          const label = `${wonGift.emoji} EPIC T${nextTier}: ${wonGift.title}`;
+          userState.backpack.unshift(label);
+          await saveUserState().catch(() => {});
+          await pushLiveWin(label);
+          renderUI();
+
+          btn.disabled = false;
+          resultEl.innerHTML = `
+            <strong style="color:#6df2a7;">تم تأكيد الدفع (${starsAmount} ⭐) وسبين هدية EPIC واحدة!</strong><br/>
+            الهدية التصاعدية: <strong>${wonGift.emoji} ${wonGift.title} (Tier ${nextTier})</strong><br/>
+            إجمالي النجوم المرسلة: <strong>${nextTotalStars} ⭐</strong>
+            ${serverConfirmed ? "<br/>حالة الإرسال على الخادم: مؤكدة" : "<br/>ملاحظة: راجع سجل الخادم/البوت لتأكيد إرسال الهدية في تيليجرام"}
+          `;
+        });
+      } catch (err) {
+        btn.disabled = false;
+        resultEl.textContent = err.message || "حدث خطأ أثناء إنشاء الفاتورة";
+      }
+    }
+
+    function copyInviteLink() {
+      const inp = document.getElementById("inviteUrlInput");
+      inp.select();
+      navigator.clipboard?.writeText(inp.value);
+      alert("تم نسخ رابط الإحالة");
+    }
+
+    function shareInviteLink() {
+      if (!isAuthenticated) {
+        openTelegramBotDirect();
+        return;
+      }
+      const url = `https://t.me/${BOT_USERNAME}?start=ref_${userId}`;
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("انضم إلى Epic Gift")}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(shareUrl);
+      } else {
+        window.open(shareUrl, "_blank");
+      }
+    }
+
+    async function claimReferralCode() {
+      if (!isAuthenticated) {
+        showStatusMessage("افتح التطبيق من داخل تيليجرام لتأكيد الإحالة.", "walletMiniStatus");
+        return;
+      }
+      const rawRef = (document.getElementById("claimRefInput")?.value || "").trim();
+      if (!rawRef) {
+        alert("أدخل كود أو معرّف المُدعِي");
+        return;
+      }
+      try {
+        const res = await fetch("/api/claim-referral", {
+          method: "POST",
+          headers: await apiHeaders(),
+          body: JSON.stringify({
+            refCode: rawRef,
+            referredUserId: userId
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.ok) {
+          alert(data?.error || "تعذر تأكيد الإحالة");
+          return;
+        }
+        await loadAllData();
+        alert("تم تأكيد الإحالة بنجاح");
+      } catch (e) {
+        alert("تعذر الاتصال بالخادم لتأكيد الإحالة");
+      }
+    }
+
+    initHeaderUser();
+    initTonConnect();
+    loadAllData();
+  </script>
+</body>
+</html>
